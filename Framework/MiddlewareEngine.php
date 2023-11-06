@@ -1,71 +1,52 @@
 <?php
+
 namespace Framework;
-use Framework\Exceptions\MiddlewareNotFoundException;
 
+use Framework\HTTPRequest;
+use Framework\Middleware;
 
-trait middlewareEngine {
+use Illuminate\Http\Response;
 
-        public static $listMiddleware = [];
-        public static $middlewareChain = [];         
-    
-        public static function setMiddleware($appFolder) {            
-            $middlewareFilePath = $appFolder.'middlewares.php';            
-            if(file_exists($middlewareFilePath)){
-                self::$listMiddleware = require_once($middlewareFilePath);
-            }
-    
+/**
+ * Class MiddlewareEngine
+ *
+ * @property Middleware[] $middlewares The list of middlewares in chain engine
+ */
+class MiddlewareEngine {
+    private static $middlewares = array();
+
+    /**
+     * Initialize MiddlewareEngine static class
+     *
+     * @param Middleware[] $middlewares The list of middlewares route
+     * @return void
+     */
+    public static function init(array $middlewares): void {
+        self::$middlewares = $middlewares;
+    }
+
+    /**
+     * Get list of middleware instance in chain engine
+     *
+     * @return Middleware[]
+     */
+    public static function getMiddlewares(): array {
+        return self::$middlewares;
+    }
+
+    /**
+     * Run next middleware in chain engine
+     *
+     * @param HTTPRequest $httpRequest The current HTTP request of middleware chain 
+     * @param Response $httpResponse The current HTTP response of middleware chain 
+     * @return Response
+     */
+    public static function runNextMiddleware(HTTPRequest $request, Response $response): Response {
+        if(count(self::$middlewares)) {
+            $middleware = array_shift(self::$middlewares);
+            return $middleware->handle($request, $response);
         }
 
-        public function getListMiddleware()
-        {
-            return self::$listMiddleware;
-        }
-        
-        public function getListMiddlewareChain()
-        {
-            return self::$middlewareChain;
-        }          
-    
-        public static function setMiddlewareChain($httpRequest) {
-            // var_dump(self::$listMiddleware);
-            $MiddlewaresFound = array_filter(self::$listMiddleware,function($middleware) use ($httpRequest){            
-                $return = preg_match("#^" . $middleware['path'] . "$#", $httpRequest->getPath()) && (@$middleware['method'] == $httpRequest->getMethod() || empty($middleware['method'])) || empty($middleware['path']);            
-                return $return;
-            });
-
-            $numberMiddleware = count($MiddlewaresFound);
-            if($numberMiddleware > 0)
-            {
-                foreach($MiddlewaresFound as $MiddlewareFound){
-                    if(is_array($MiddlewareFound['middleware'])){
-                        foreach($MiddlewareFound['middleware'] as $v){
-                            $middlewareChain[] = (["middleware"=>$v]);
-                        }
-                    } else {
-                        $middlewareChain[]= array("middleware"=>$MiddlewareFound['middleware']);
-                    }
-                }
-
-                self::$middlewareChain = $middlewareChain;
-                return true;
-            }
-            return false;
-        }  
-
-        public static function runMiddlewareChain($httpRequest,$httpResponse){
-            $cursorMiddleware    =   @self::$middlewareChain[0]['middleware'];  
-            if($cursorMiddleware){
-                $class  = new $cursorMiddleware();
-                if (method_exists($class, 'handle')){
-                    unset(self::$middlewareChain[0]);
-                    self::$middlewareChain = array_values(self::$middlewareChain);
-                    return $class->handle($httpRequest,$httpResponse);
-                } else {
-                    throw new MiddlewareNotFoundException("Path : ".$httpRequest->getPath());
-                }                
-            } else {
-                return $httpResponse;
-            }
-        }
-
+        return $response;
+    }
 }
