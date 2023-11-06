@@ -2,55 +2,68 @@
 
 namespace Framework;
 
-use Framework\Exceptions\MiddlewareNotFoundException;
 use Framework\Exceptions\AppFolderNotFoundException;
-use Illuminate\Http\Response as Response;
+use Framework\MiddlewareEngine;
+use Framework\HTTPRequest;
+use Framework\Router;
+use Framework\Views;
 
-class Framework
-{
-    use Router, MiddlewareEngine;
-    public $_httpRequest;
-    public $_httpResponse;
-    public static $_appFolder;
+use Illuminate\Http\Response;
 
-    public function __construct()
-    {
-        if(empty(self::$_appFolder)){
-            throw new AppFolderNotFoundException();
-        } else {
-            $this->_httpRequest = new HttpRequest();
-            $params = $this->_httpRequest->getParams();
-            $uri = $this->_httpRequest->getUrl();
-            $this->_httpResponse = new Response();
-            Framework::setListRoute(self::$_appFolder);
-            Framework::setMiddleware(self::$_appFolder);
-            Framework::setMiddlewareChain($this->_httpRequest);
-            $this->findRoute();
+/**
+ * Framework class
+ * 
+ * @property string $appFolder The folder path of app
+ * @property Response $response The current HTTP response
+ * @property HTTPRequest $request The current HTTP request
+ */
+class Framework {
+    public $appFolder;
+    public $response;
+    public $request;
+    
+    /**
+     * Constructor of Framework class
+     *
+     * @param string $folder The app folder path
+     * @return void
+     */
+    public function __construct(string $folder) {
+        /* Check if app folder exist */
+        if(!is_dir($folder)) {
+            throw(new AppFolderNotFoundException("The app folder doesn't exist : ".$folder));
         }
+
+        Router::init($folder);
+        Views::init($folder);
+        
+        $this->request = new HTTPRequest();
+        $this->response = new Response();
+        $this->appFolder = $folder; 
     }
 
-    public static function setAppFolder($folder){
-        self::$_appFolder = $folder;
-    }
+    /**
+     * The entry point of Framework
+     *
+     * @return void
+     */
+    public function run(): Response {
+        /* Get associated route from HTTP request */
+        $route = Router::getRoute($this->request);
+        /* Set route instance in HTTP request */
+        $this->request->setRoute($route);
 
+        /* Set route middlewares in chain engine */
+        MiddlewareEngine::init($route->getMiddlewares());
+        /* Execute middlewares chain and controller */
+        $this->response = $route->run($this->request, $this->response);
 
-    public function run()
-    {
-
-        $this->_httpResponse = $this->runMiddlewareChain($this->_httpRequest,$this->_httpResponse );
-        $this->_httpResponse = $this->_foundRoute->run($this->_httpRequest,$this->_httpResponse);
-
-        if(!$this->_httpResponse instanceof Response){
-            $content = $this->_httpResponse;
-            $this->_httpResponse = new Response();
-            $this->_httpResponse->setContent($content);            
+        if(!$this->response instanceof Response) {
+            $content = $this->response;
+            $this->response = new Response();
+            $this->response->setContent($content);
         }
-        // $this->_httpResponse->prepare($this->_httpRequest);
-        // $this->_httpResponse->send();
-        // echo '<pre>';
-        // print_r($this->_foundRoute);
-        // print_r(self::$middlewareChain);
-        // echo '</pre>';
-        return $this->_httpResponse->send();
+
+        return $this->response->send();
     }
 }
