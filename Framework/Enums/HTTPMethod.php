@@ -35,19 +35,16 @@ enum HTTPMethod: string {
     /** @var string PATCH method applies partial modifications to a resource. */
     case PATCH = "PATCH";
 
-    /** @var string ALL methods. */
-    case ALL = "ALL";
-
     /** @var array List of enum names. */
-    public const NAMES = array("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH", "ALL");
+    public const NAMES = array("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH");
 
     /** @var array List of enum values. */
-    public const VALUES = array("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH", "ALL");
+    public const VALUES = array("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH");
 
     /**
      * Get static enum from name
      * 
-     * @param value-of<self::NAMES>|'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH'|'ALL' $name The enum name to be returned
+     * @param value-of<self::NAMES>|'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH' $name The enum name to be returned
      * @return self
      */
     public static function fromName(string $name): self {
@@ -89,8 +86,7 @@ enum HTTPMethod: string {
             self::CONNECT => "CONNECT",
             self::OPTIONS => "OPTIONS",
             self::TRACE => "TRACE",
-            self::PATCH => "PATCH",
-            self::ALL => "ALL"
+            self::PATCH => "PATCH"
         };
     }
 
@@ -109,8 +105,7 @@ enum HTTPMethod: string {
             self::CONNECT => "CONNECT",
             self::OPTIONS => "OPTIONS",
             self::TRACE => "TRACE",
-            self::PATCH => "PATCH",
-            self::ALL => "ALL"
+            self::PATCH => "PATCH"
         };
     }
 }
