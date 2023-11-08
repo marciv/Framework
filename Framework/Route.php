@@ -19,7 +19,7 @@ use Illuminate\Http\Response;
  * @property Middleware[] $middlewares The list of middlewares of route
  * @property string|Controller $controller The controller of route
  * @property string $action The controller method of route
- * @property HTTPMethod $method The request method of route
+ * @property HTTPMethod[] $method The request methods of route
  * @property array $param The request params of route
  * @property string $path The request path of route
  */
@@ -124,11 +124,11 @@ class Route {
     /**
      * Set HTTP request method in route
      * 
-     * @param HTTPMethod $method The HTTP request method to be set in route
+     * @param HTTPMethod[] $method The HTTP request method to be set in route
      *
      * @return void
      */
-    public function setMethod(HTTPMethod $method): void {
+    public function setMethod(array $method): void {
         $this->method = $method;
     }
 
@@ -184,9 +184,9 @@ class Route {
     /**
      * Get HTTP request method in route
      *
-     * @return HTTPMethod
+     * @return HTTPMethod[]
      */
-    public function getMethod(): HTTPMethod {
+    public function getMethod(): array {
         return $this->method;
     }
 

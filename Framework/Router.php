@@ -76,11 +76,11 @@ class Router {
     /**
      * Add route instance in router list 
      *
-     * @param HTTPMethod $method The HTTP method of route
+     * @param HTTPMethod[] $method The HTTP method of route
      * @param Route $route The instance of Route
      * @return void
      */
-    public static function addRoute(HTTPMethod $method, Route $route): void {
+    public static function addRoute(array $method, Route $route): void {
         /* Check if route class is children of Route class */
         if(!is_subclass_of($route, Route::class)) {
             throw(new Exception("The route '$route' is not subclass of ".Route::class));
@@ -100,7 +100,7 @@ class Router {
      * @return void
      */
     public function get(Route $route): void {
-        self::addRoute(HTTPMethod::GET, $route);
+        self::addRoute(array(HTTPMethod::GET), $route);
     }
 
     /**
@@ -110,7 +110,7 @@ class Router {
      * @return void
      */
     public function post(Route $route): void {
-        self::addRoute(HTTPMethod::POST, $route);
+        self::addRoute(array(HTTPMethod::POST), $route);
     }
 
     /**
@@ -120,7 +120,7 @@ class Router {
      * @return void
      */
     public function put(Route $route): void {
-        self::addRoute(HTTPMethod::PUT, $route);
+        self::addRoute(array(HTTPMethod::PUT), $route);
     }
 
     /**
@@ -130,7 +130,7 @@ class Router {
      * @return void
      */
     public function delete(Route $route): void {
-        self::addRoute(HTTPMethod::DELETE, $route);
+        self::addRoute(array(HTTPMethod::DELETE), $route);
     }
 
     /**
@@ -140,7 +140,7 @@ class Router {
      * @return void
      */
     public function all(Route $route): void {
-        self::addRoute(HTTPMethod::ALL, $route);
+        self::addRoute(HTTPMethod::cases(), $route);
     }
 
     /**
@@ -159,7 +159,7 @@ class Router {
             /* Check if request path match with route path */
             return preg_match("#^" . $route->getPath() . "$#", $path)
             /* Check if request method match with route method */
-            && in_array($route->getMethod(), array(HTTPMethod::ALL, $method));
+            && in_array($method, $route->getMethod());
         });
 
         if(!count($found)) {
